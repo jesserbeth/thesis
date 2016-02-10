@@ -1,0 +1,162 @@
+\documentclass[12pt, letterpaper, fleqn]{report}
+
+\usepackage[pdftex]{graphicx}
+\usepackage{color}
+\usepackage{fancyhdr}
+\usepackage{amsmath, epsfig}
+\usepackage{url}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{hyperref}
+\usepackage{pdfpages}
+\numberwithin{algorithm}{chapter}
+\usepackage{geometry}
+\usepackage{comment}
+\usepackage{titlesec}
+\geometry{verbose, letterpaper, dvips,
+		  lmargin=1.5in, rmargin=1.0in,
+		  tmargin=1.0in, bmargin=1.25in,
+		  head=12pt, nofoot}
+
+%--- This package contains local macros.  Remove the "draft" option (or
+%--- (or change it to "final") for the final version --------
+\usepackage[final]{thesisMacros}
+
+% for tables
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage[table]{xcolor}
+
+% for source code figures
+\usepackage{color}
+\definecolor{lightgray}{rgb}{.9,.9,.9}
+\definecolor{darkgray}{rgb}{.4,.4,.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+\usepackage {hyperref}
+\usepackage{listings}
+\lstdefinelanguage{JavaScript}{
+  %keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break, await, yield},
+  keywords={}
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this, def, if, not, return},
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{black}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
+
+\lstset{
+   language=JavaScript,
+   backgroundcolor=\color{lightgray},
+   extendedchars=true,
+   %basicstyle=\footnotesize\ttfamily\singlespacing,
+   basicstyle=\footnotesize,
+   showstringspaces=false,
+   showspaces=false,
+   %numbers=left,
+   %numberstyle=\footnotesize,
+   %numbersep=9pt,
+   tabsize=2,
+   breaklines=true,
+   showtabs=false,
+   captionpos=b
+}
+
+\makeatother
+\usepackage{listings}
+\renewcommand{\lstlistingname}{Listing}
+% end source code definition
+
+
+
+\pdfminorversion=5
+
+\PageHeaders
+\setcounter{secnumdepth}{3}
+\begin{document}
+
+  \setcounter{page}{0}
+  \pagenumbering{roman}
+
+  \topskip=0pt
+  \baselineskip=13pt
+  \parskip=10pt % for toc
+  \parindent 3mm
+
+  \input{titlePage.tex}
+
+  \BodySpacing
+
+  \pagenumbering{gobble}
+  \includepdf[pages={1}]{figures/committee.pdf}
+  \setcounter{page}{1}
+  \pagenumbering{roman}
+\input{abstract.tex}
+\input{dedication.tex}
+\input{acknowledgements.tex}
+
+  % table of contents:
+  % the .toc file generated isn't entirely accurate. If you run latex & bibtex a few times
+  % so it generates everything, and look at the table of contents, it will show the list
+  % of figures and list of rables page numbers to be on less than the actually are. To hack
+  % a fix for it (assuming of course that it's really latex's fault and not mine), you can
+  % open the .toc file and edit the numbers that will be displayed in the table of contents.
+  % Then, run latex once. This will change the table of contents to the numbers you edited
+  % in the .toc file. But running latex again will overwrite your changes.
+  {
+    \TOCSpacing
+
+    \tableofcontents
+
+    \newpage
+    \phantomsection \label{totallyNotAHack1}
+    \addcontentsline{toc}{chapter}{List of Tables}
+    \listoftables
+
+    \newpage
+    \phantomsection \label{totallyNotAHack2}
+    \addcontentsline{toc}{chapter}{List of Figures}
+    \listoffigures
+
+	% \nocite{*} % This line affects the bibliography.  If it is uncommented, then
+				 % entries in the bibliography that aren't actually referenced in the
+				 % paper will still be placed in the bibliography. Without this line,
+				 % entries may still be placed in the .bib file, but the entries that
+				 % are not used throughout the paper are no added to the created
+				 % bibliography pages.
+  }
+
+  % actual text
+  {
+	\newpage
+	\setcounter{page}{0}
+	\pagenumbering{arabic}
+
+	\BodySpacing
+
+	\input{intro.tex}
+    \input{background.tex}
+    \input{gpuSim.tex}
+    \input{design.tex}
+    \input{implementation.tex}
+    \input{results.tex}
+    \input{conclusions.tex}
+  }
+
+
+  %\nocite{*}  
+  % bibliography
+  {
+	\newpage
+	\baselineskip=13pt
+    % \bibliographystyle{IEEEbib} % attempts to order based on appearance
+	\bibliographystyle{plain} % attempts to order alphabetically by author
+	\addcontentsline{toc}{chapter}{Bibliography}
+	\bibliography{bib}
+  }
+\end{document}

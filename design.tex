@@ -1,0 +1,63 @@
+\chapter{Software Engineering}
+\label{chapter:design}
+
+\section{Overview}
+Once the preprocessing is complete, one of three simulation methods was applied: Minimal Time, Iterative Minimal Time or Burn Distances. Since the goal of a forest fire simulator is to operate in real-time, it is unrealistic to expect to wait that long to receive the simulation data. After thirty minutes, the fire will have changed enough for the simulation's predictions to be irrelevant. The following algorithm outlines the simulation steps from start to finish:
+
+\begin{algorithm}
+  \caption{Simulation Progression}
+  \label{alg:sim}
+%   \begin{algorithmic}[1] <- this will give you line numb
+  \begin{algorithmic}
+  \STATE InitializeTerrainData();
+  \STATE CalculateSpreadRates();
+  \STATE RunPropagationSimulation();
+  \STATE GenerateOutputFile();
+  \end{algorithmic}
+\end{algorithm}
+
+The InitializeTerrainData() and CalculateSpreadRates() functions in Algorithm \ref{alg:sim} are part of the preprocessing in this project. These are not addressed in detail in this paper due to space constraints. The RunPropagationSimulation() portion is the focus of this paper and will be outlined in more detail in the following sections.
+
+
+\section{Service Requirements}
+
+\subsection{Functional Requirements}
+
+\subsection{Non-functional Requirements}
+  
+\section{Use Case Modeling}
+\subsection{Overview}
+This section describes the use case for a a simulation.
+
+
+%\begin{figure}
+%    \centering
+%    \includegraphics[height=\textheight,width=\textwidth,keepaspectratio]%{figures/design/use_case_diagram.png}
+%    \caption{A use case diagram of the NCS web interface.}
+%    \label{fig:usecase_diagram}
+%\end{figure}
+
+\subsection{Detailed Use Cases}
+
+\subsubsection{Initialize Terrain Data}
+ 
+
+\subsubsection{Initialize GPU Data}
+
+
+\subsubsection{Propagate}
+
+\subsubsection{Accelerate}
+
+
+\subsubsection{Test Crowning Status}
+
+
+\subsubsection{Test Spotting Check}
+
+
+\subsubsection{Test Exit Conditions}
+
+
+\section{Architecture}
+\subsection{CUBIX}

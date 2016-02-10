@@ -1,0 +1,17 @@
+\chapter{Conclusions and Future Work}
+\label{chapter:conclusions}
+
+\section{Conclusions}
+
+
+\section{Future Work}
+While this work provides a fully-functioning forest fire library, there are several areas where it could be expanded in the future. 
+
+\subsection{Multi-GPU Implementation} 
+CUDA provides the ability to program for multiple GPUs at the same time \cite{cuda}. The ability to use multiple GPUs to process the simulation could further improve the runtime. Problems that will arise from implementing the library on multiple GPUs include stitching the simulation together at the edges and triggering memory transfer between GPUs at the point where simulations bleed across the cells being processed on individual GPUs. 
+
+\subsection{Burn Time Selection}
+Forest researchers are interested in the carbon footprint caused by a forest fire. This environmental cost is just as important as the physical cost of loss of property and life that can be caused by a wildfire. 
+
+\subsection{Visualization}
+In order to better understand the impacts of forest fires in their environment, a visualization is needed. Visualizing the simulation is an important next step for future work of this project. It would allow an interactive environment in which the simulation could exist and be modified dynamically. 

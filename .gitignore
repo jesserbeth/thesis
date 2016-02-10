@@ -1,0 +1,12 @@
+*.swp
+*.bak
+thesis.lof
+thesis.log
+thesis.toc
+thesis.aux
+thesis.lot
+thesis.bbl
+thesis.blg
+q.log
+thesis.pdf
+thesis.out
