@@ -2,32 +2,51 @@
 \label{chapter:design}
 
 \section{Overview}
-Once the preprocessing is complete, one of three simulation methods was applied: Minimal Time, Iterative Minimal Time or Burn Distances. Since the goal of a forest fire simulator is to operate in real-time, it is unrealistic to expect to wait that long to receive the simulation data. After thirty minutes, the fire will have changed enough for the simulation's predictions to be irrelevant. The following algorithm outlines the simulation steps from start to finish:
-
-\begin{algorithm}
-  \caption{Simulation Progression}
-  \label{alg:sim}
-%   \begin{algorithmic}[1] <- this will give you line numb
-  \begin{algorithmic}
-  \STATE InitializeTerrainData();
-  \STATE CalculateSpreadRates();
-  \STATE RunPropagationSimulation();
-  \STATE GenerateOutputFile();
-  \end{algorithmic}
-\end{algorithm}
-
-The InitializeTerrainData() and CalculateSpreadRates() functions in Algorithm \ref{alg:sim} are part of the preprocessing in this project. These are not addressed in detail in this paper due to space constraints. The RunPropagationSimulation() portion is the focus of this paper and will be outlined in more detail in the following sections.
-
+The XXXX library provides functions that allow for a dynamic forest fire simulation to occur. The library is responsible for managing the data provided by input files by a user, calculating spread data, running the sequential or parallel simulation, and writing out the final data to a file for further reading. 
 
 \section{Service Requirements}
 
 \subsection{Functional Requirements}
+The functional requirements were created from the behavioral requirements of the library's functionality as used by an outside source. The list of functional requirements may be viewed in Table \ref{tbl:functional_reqs}.
+
+\begin{table}
+\caption{XXX Wildfire Simulation Library Functional Requirements.}
+\label{tbl:functional_reqs}
+  \rowcolors{2}{gray!25}{white}
+  \begin{tabular}{cl}
+    \rowcolor{gray!50}
+    Number & Description \\
+    FR01 &  \begin{tabular}[c]{@{}l@{}}The library shall read in fuel model, moisture model, and\\ terrain data.\end{tabular}\\
+    FR02 & The library shall define the granularity of simulation size. \\
+    FR03 &  \begin{tabular}[c]{@{}l@{}}The library shall create and initialize all data members necessary\\ to a complex simulation on the CPU and GPU.\end{tabular}\\
+    FR04 & The simulation shall calculate the maximum rate of spread for every cell. \\
+	FR05 & \begin{tabular}[c]{@{}l@{}}The library shall run a GPU simulation using the BD, MT,\\ or IMT spread methodologies. \end{tabular}\\
+    FR06 & The library shall allow the Crowning flag to be toggled. \\
+    FR07 & The library shall allow the Spotting flag to be toggled. \\
+    FR08 & \begin{tabular}[c]{@{}l@{}}The library notify the user when their input files are not compatible\\ with the simulation system. \end{tabular}\\
+    FR09 & The data must be initialized before the simulation is run. 
+  \end{tabular}
+ % \end{table}
+%\begin{table}
+\\ \\
+\caption{XXX Wildfire Simulation Library Non-functional Requirements.}
+\label{tbl:nonfunctional_reqs}
+  \rowcolors{2}{gray!25}{white}
+  \begin{tabular}{cl}
+    \rowcolor{gray!50}
+    Number & Description \\
+    NR01 & The library shall be written in C++ and CUDA. \\
+    NR02 & The library must use CUDA compute capability 2.0 or higer. \\
+    NR03 & \begin{tabular}[c]{@{}l@{}}The library's sequential implementation must be a direct reflection of its\\ parallel implementation. \end{tabular}\\
+  \end{tabular}
+  \end{table}
 
 \subsection{Non-functional Requirements}
+The non-functional requirements were created based on the internal interactions of the library functions. Data needed to be manipulated and passed among classes and between the host and device for computation purposes. The non-functional requirements are listed in Table \ref{tbl:nonfunctional_reqs}.
   
 \section{Use Case Modeling}
 \subsection{Overview}
-This section describes the use case for a a simulation.
+For a better understanding of how the user interacts with the library, this section describes use cases for running a simulation. Both the parallel and sequential functionalities will be shown here. 
 
 
 %\begin{figure}
@@ -38,25 +57,29 @@ This section describes the use case for a a simulation.
 %\end{figure}
 
 \subsection{Detailed Use Cases}
+\subsubsection{Initialize Simulation Data}
+The terrain data encompasses more than the terrain data. The fuel model data must be read from the files, the terrain data, the moisture data, the canopy height data, the crown base height data, and the crown bulk density data. If there is an error with any of these files, the library reports an error. 
 
-\subsubsection{Initialize Terrain Data}
- 
+\subsubsection{Initialize CPU Data}
+The data must be initialized from the input data into a format which is useable by the simulation. This includes calculating the maximum spread rate before the simulation begins. This function must be called whenever there is a change to the data values in the initialize function. 
 
-\subsubsection{Initialize GPU Data}
-
+\subsubsection{Copy To Device}
+The data needed for the simulation must be copied from the host to the device (GPU). This must occur every time the data is changed on the CPU side of the library. 
 
 \subsubsection{Propagate}
+This occurs when a propagate function is called. This could be from three sources: BD, MT, or IMT. 
 
 \subsubsection{Accelerate}
+Once the fire has spread after a time tick, the rate of spread from the fire is accelerated.
 
+\subsubsection{Crowning}
+Once the fire has been accelerated, a test is done to see if the fire is crowning. The moment a fire crowns, the torching flag is set for one time tick. The crowning test also checks to see if the fire is passive. If it has progressed to an active fire, the maximum rate of spread is updated to reflect the change. 
 
-\subsubsection{Test Crowning Status}
+\subsubsection{Spotting}
+In the event that torching has occurred during the crowning phase, spotting is calculated. A fire brand is launched into the air and it is tested to calculate if any new fires start ahead of the flame wall.
 
-
-\subsubsection{Test Spotting Check}
-
-
-\subsubsection{Test Exit Conditions}
+\subsubsection{Copy From Device}
+On completion of the desired simulation, the data from the simulation must be copied back from the device back to the host for further processing. 
 
 
 \section{Architecture}

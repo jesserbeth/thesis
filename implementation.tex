@@ -2,21 +2,24 @@
 \label{chapter:implementation}
 
 \section{Overview}
-As with the sequential implementation, the parallel implementation used the preprocessed terrain data to feed into the simulator. The kernels are written using the GPU programming language CUDA \cite{cuda}. CUDA is a parallel computing programming language designed to run on NVIDIA produced GPUs. CUDA allows GPUs to be used for general-purpose computing, and is therefore the ideal language with which to program a highly parallelized version of the fire propagation model. Three kernels were implemented for this paper, based on the three propagation methods presented in Section IV. An overall algorithm for the kernel calls is outlined in Algorithm \ref{alg:kernel}. The details on implementation of the kernels are found in the subsequent subsections.
+
+Once the preprocessing is complete, one of three simulation methods was applied: Minimal Time, Iterative Minimal Time or Burn Distances. Since the goal of a forest fire simulator is to operate in real-time, it is unrealistic to expect to wait that long to receive the simulation data. After thirty minutes, the fire will have changed enough for the simulation's predictions to be irrelevant. The following algorithm outlines the simulation steps from start to finish:
 
 \begin{algorithm}
-  \small
-  \caption{Simulation Composition}
-  \label{alg:kernel}
+  \caption{Simulation Progression}
+  \label{alg:sim}
+%   \begin{algorithmic}[1] <- this will give you line numb
   \begin{algorithmic}
+  \STATE InitializeTerrainData();
+  \STATE CalculateSpreadRates();
   \WHILE{Simulation !Complete}
-  \STATE computeKernel$<<<Blocks,Threads>>>$(inputs)
-  \STATE terminateKernel$<<<Blocks,Threads>>>$(inputs)
-  \ENDWHILE
+  \STATE RunPropagationSimulation();
+  \ENDWHILE  
+  \STATE GenerateOutputFile();
   \end{algorithmic}
 \end{algorithm}
 
-The blocks and threads referenced in Algorithm \ref{alg:kernel} are referencing the blocks and threads that are allocated by the GPU upon initiation of the kernel. Each GPU has a specific number of blocks that it can allocate, and each block has a number of threads it can allocate. The threads process the kernel code independently of each other. Two kernels are necessary in this work because there is no way to force block-wise synchronization without a kernel finishing its work. The CPU calls the two kernels in a loop in this manner to ensure that one time step's propagation is calculated before the next can begin.
+The InitializeTerrainData() and CalculateSpreadRates() functions in Algorithm \ref{alg:sim} are part of the preprocessing in this project. These are not addressed in detail in this paper due to space constraints. The RunPropagationSimulation() portion is the focus of this paper and will be outlined in more detail in the following sections.
 
 In order to address the runtime analysis needed for this paper, a sequential version of the kernels was also implemented. The equations and spread methodologies are the same between the kernels and the sequential implementation. However, many of the data concurrency problems were not a problem in the sequential version, and therefore some of the secondary kernels which will be addressed were not implemented in the sequential versions. The sequential implementations are not discussed in detail in this paper because they are not the main focus of the library and exist mostly for comparison purposes.  
 
@@ -187,8 +190,90 @@ The parallel implementation of the IMT kernel is also very similar to the sequen
 \end{algorithm}
 
 \section{Fire Acceleration}
+A fire does not begin burning at its maximum rate of spread. Instead, it accelerates slowly towards its maximum rate over time as it burns. In this simulator library, fire acceleration is based on the work done by vFire \cite{vFire}. vFire in turn used the model presented by FARSITE \cite{FARSITE}. The formula is a simple logarithmic model that state the rate at some time is dependent on the time allowed for the fire to accelerate to its maximum rate depending on the current conditions of the cell in which it burns. This model was developed by the Canadian Forestry Fire Danger Group and Mcalpine and Wakimoto \cite{accel_canada}\cite{accel_mcalpine}. 
+
+Given the maximum spread rate $R_{max}$, the maximum spread rate at time $t$ is given by: 
+
+\begin{equation}
+R(t) = R_{max}(1.0 - e^{a_at})
+\label{eq:R(t)}
+\end{equation}
+
+where $a_a$ is the acceleration constant and is drawn from the fuel model appropriate for the current fire cell. The time $t_{max}$ required to achieve the maximum spread rate given the current spread rate $R$ is given by: 
+
+\begin{equation}
+t_{max} = \frac{1.0 - \frac{R}{R_{max}}}{a_a}
+\end{equation}
+
+To calculate how much the rate should change per time step, the spread rate for every cell is increased at each time step. The rate of increase $dR$ is given by: 
+
+\begin{equation}
+dR = \frac{dt}{t_{max}}(R_{max} - R_{current})
+\end{equation}
+
+A newly ignited fire will begin with a spread rate of zero and increase steadily to its maximum rate. Once the maximum spread rate is reached, the simulation does not accelerate past it. As the fire spreads to a new cell, that cell inherits the rate properties of the cell which ignited it. If the maximum spread rate of the newly ignited cell is smaller than the rate it inherits, it is clamped to its maximum. If the rate is slower than the maximum spread rate of the newly ignited cell, it is accelerated using the following equation: 
+
+\begin{equation}
+dt = timeOfArrival(thisCell) - max(baseTime, timeOfArrival(ignitingCell))
+\end{equation}
+
+The time of arrival issue referred to by Figure \ref{fig:accerr} was a problem caused by acceleration in vFire. However, the time stepping methods in the MT and IMT methods do not have this issue as they have dynamic timestepping, and so they are not bound by the same limitations. The BD method's fix was addressed earlier in the chapter. 
 
 \section{Crown Fire}
+The occurance of crown fires is important for both the overall spread of the fire as well as the phenomena of spotting. Torching occurs when the crown fire spreads from the base of the trees to the top of the trees, and is the moment when the possibility of spotting occurs. The crown fire begins as passive and has the ability to move to an active state, which increases the maximum rate of spread by the fire. The implementation presented in this paper is again based on the implementation found in vFire \cite{vFire}. Their method was based entirely on FARSITE's implementation, which uses Van Wagner's methods found in \cite{wagner1977}\cite{wagner1993}. 
+
+In this implemenation, the maximum passive crown rate is given by: 
+
+\begin{equation}
+R_{max_{crown}} = 3.34R_{10}
+\end{equation}
+
+The necessary components needed for calculating the actual maximum spread rate of an active crown fire in addition to the base propagation are all calculated based on properties found in the fuel model for each cell. The threshold which determines the point at which a passive crown fire is promoted to active (RAC) is given by: 
+
+\begin{equation}
+RAC = \frac{3.0}{CBD}
+\end{equation}
+
+The reaction intensity ($I_b$) of the fire can be obtained by multiplying the current spread rate by the intensity modifier. The intensity modifier is calculated using the same data which goes into the Rothermel equations.
+
+\begin{equation}
+I_b = R * IntensityModifier
+\end{equation}
+
+$I_o$ is the threshold intensity for a crown fire to occur. The moment when this threshold is passed is the moment when Torching occurs and a flag must be set for the spotting check. $I_o$ is given as follows: 
+
+\begin{equation}
+I_o = (0.010CBH(460 + 25.9M))
+\end{equation}
+
+Where CBH is the crown base height and M is the foliar moisture content. The crown base height is stored in one of the input files needed to operate this simulator. In this implementation (as well as the one found in vFire), foliar moisture is simply set to be 1.0. In the context of the simulation, the $I_o$ values only need to be calculated once and are included in the preprocessing phase of the simulator. 
+
+In order to determine the actual spread rate of the fire after crowning, there are two parameters which must be calculated: the crown coefficient ($a_o$), and the surface fuel consumption ($R_o$). $R_o$ can be calculated by using the reaction intensity of the fire, the current rate of spread, and the threshold intensity, given by: 
+
+\begin{equation}
+R_o = I_o \frac{R}{I_b}
+\end{equation}
+
+The crown coefficient $a_c$ may then be calculated as follows:
+
+\begin{equation}
+a_c = \frac{-ln(0.1)}{0.9(RAC - R_o)}
+\end{equation}
+
+The crown fraction burned (CFB) of the cell determines the actual maximum current spread rate of the crown fire. The CFB is found using the following equation: 
+
+\begin{equation}
+CFB = 1 - e^{-a_c(R-R_o)}
+\end{equation}
+
+In order to determine the actual maximum rate of spread, the current rate is added to the $CFB$ that is scaled based on how close to the maximum crown rate the current rate is, as given by: 
+
+\begin{equation}
+R_{actual} = R + CFB * (R_{max_{crown}} - R)
+\end{equation}
+
+The maximum between this new calculated value and the maximum spread rate for the base fire is the actual value that is passed back as the maximum spread rate of a fire cell containing an active crown fire. 
+
 
 \section{Spotting}
 
