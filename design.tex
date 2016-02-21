@@ -21,10 +21,11 @@ The functional requirements were created from the behavioral requirements of the
     FR03 &  \begin{tabular}[c]{@{}l@{}}The library shall create and initialize all data members necessary\\ to a complex simulation on the CPU and GPU.\end{tabular}\\
     FR04 & The simulation shall calculate the maximum rate of spread for every cell. \\
 	FR05 & \begin{tabular}[c]{@{}l@{}}The library shall run a GPU simulation using the BD, MT,\\ or IMT spread methodologies. \end{tabular}\\
-    FR06 & The library shall allow the Crowning flag to be toggled. \\
-    FR07 & The library shall allow the Spotting flag to be toggled. \\
-    FR08 & \begin{tabular}[c]{@{}l@{}}The library notify the user when their input files are not compatible\\ with the simulation system. \end{tabular}\\
-    FR09 & The data must be initialized before the simulation is run. 
+    FR06 & The library shall calculate fire acceleration for the simulation. \\
+    FR07 & The library shall allow the Crowning flag to be toggled. \\
+    FR08 & The library shall allow the Spotting flag to be toggled. \\
+    FR09 & \begin{tabular}[c]{@{}l@{}}The library notify the user when their input files are not compatible\\ with the simulation system. \end{tabular}\\
+    FR010 & The data must be initialized before the simulation is run. 
   \end{tabular}
  % \end{table}
 %\begin{table}
@@ -36,8 +37,12 @@ The functional requirements were created from the behavioral requirements of the
     \rowcolor{gray!50}
     Number & Description \\
     NR01 & The library shall be written in C++ and CUDA. \\
-    NR02 & The library must use CUDA compute capability 2.0 or higer. \\
+    NR02 & The library must use CUDA version 6.0 or higher. \\
     NR03 & \begin{tabular}[c]{@{}l@{}}The library's sequential implementation must be a direct reflection of its\\ parallel implementation. \end{tabular}\\
+    NR04 & \begin{tabular}[c]{@{}l@{}}To run the parallel version of the code, an NVIDIA GPU with CUDA Compute\\ Capability 2.0 or higher is needed. \end{tabular}\\
+    NR05 & This library must be used on the Linux platform. \\
+    NR06 & The library must use GDAL version 1.10.1. \\
+    NR07 & The library must be compiled with CMake Version 2.8 or higher. \\
   \end{tabular}
   \end{table}
 
@@ -46,19 +51,25 @@ The non-functional requirements were created based on the internal interactions 
   
 \section{Use Case Modeling}
 \subsection{Overview}
-For a better understanding of how the user interacts with the library, this section describes use cases for running a simulation. Both the parallel and sequential functionalities will be shown here. 
+For a better understanding of how the user interacts with the library, this section describes use cases for running a simulation. Both the parallel and sequential functionalities will be shown here. The use case model may be found in Figure \ref{fig:usecase_diagram}. In order to better illustrate the library's functionality, a sequence diagram may be seen in Figure \ref{fig:sequence_diagram}. 
 
+\begin{figure}
+    \centering
+    \includegraphics[height=4.5in,width=\textwidth,keepaspectratio]{figures/design/use_case_diagram.png}
+    \caption{A use case diagram for the Wildfire simulation library.}
+    \label{fig:usecase_diagram}
+\end{figure}
 
-%\begin{figure}
-%    \centering
-%    \includegraphics[height=\textheight,width=\textwidth,keepaspectratio]%{figures/design/use_case_diagram.png}
-%    \caption{A use case diagram of the NCS web interface.}
-%    \label{fig:usecase_diagram}
-%\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[height=\textheight,width=\textwidth,keepaspectratio]{figures/design/sequence_diagram.png}
+    \caption{A sequence diagram for the Wildfire simulation library.}
+    \label{fig:sequence_diagram}
+\end{figure}
 
 \subsection{Detailed Use Cases}
 \subsubsection{Initialize Simulation Data}
-The terrain data encompasses more than the terrain data. The fuel model data must be read from the files, the terrain data, the moisture data, the canopy height data, the crown base height data, and the crown bulk density data. If there is an error with any of these files, the library reports an error. 
+The terrain data encompasses more than the terrain data. The fuel model data must be read from the files, the terrain data, the moisture data, the canopy height data, the crown base height data, and the crown bulk density data. If there is an error with any of these files, the library reports an error. This is the point where the simulation is scaled to the appropriate granularity. 
 
 \subsubsection{Initialize CPU Data}
 The data must be initialized from the input data into a format which is useable by the simulation. This includes calculating the maximum spread rate before the simulation begins. This function must be called whenever there is a change to the data values in the initialize function. 
@@ -81,7 +92,10 @@ In the event that torching has occurred during the crowning phase, spotting is c
 \subsubsection{Copy From Device}
 On completion of the desired simulation, the data from the simulation must be copied back from the device back to the host for further processing. 
 
+\subsubsection{Write To File}
+This functionality allows the user to write the computed output of their time of arrival map to a .csv output file. 
 
 \section{Architecture}
+This library is designed to act as a facilitation tool that will allow a user to program their own custom-defined simulations. The program aims to make visualization easily portable to users. In order to convey an understanding of the overall architecture of the library, a 
 ** This is software architecture. Put class diagrams here. 
 \subsection{CUBIX}
