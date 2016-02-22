@@ -2,16 +2,23 @@
 \label{chapter:conclusions}
 
 \section{Conclusions}
-
+This work implemented a fully-functional forest fire simulation library. This library has the ability to simulate three propagation methods that include fire acceleration, crowning, and spotting. The simulation library provides a simple interface to initialize the simulation and 
 
 \section{Future Work}
 While this work provides a fully-functioning forest fire library, there are several areas where it could be expanded in the future. 
 
+\subsection{Improved Spotting} 
+Several approximations were made when implementing the spotting method for this work. The limitations were mostly based in data limitations rather than simulation limitations. However, a more accurate method for describing the spotting needs additional data. A more comprehensive model of the atmosphere above a forest fire would increase the accuracy of the spotting method as it would allow for multiple layers of wind vectors to show the impact of wind on the fire itself. 
+
+\subsection{Atmospheric Incorporation}
+Forest researchers are interested in the carbon footprint caused by a forest fire. This environmental cost is just as important as the physical cost of loss of property and life that can be caused by a wildfire. As a fire burns, it releases a substantial amount of carbon dioxide into the atmosphere. Knowing the impact of a fire could encourage prevention methods or understanding of a previously existing fire on the environment. 
+
+With the increase in need for understanding atmospheric impact of a forest fire, a better model of the interaction between the fire and wind data is needed. A wind mesh could increase the accuracy of the spotting method, as mentioned previously, but could also be used to determine the direction the smoke will be blown as well.
+
 \subsection{Multi-GPU Implementation} 
 CUDA provides the ability to program for multiple GPUs at the same time \cite{cuda}. The ability to use multiple GPUs to process the simulation could further improve the runtime. Problems that will arise from implementing the library on multiple GPUs include stitching the simulation together at the edges and triggering memory transfer between GPUs at the point where simulations bleed across the cells being processed on individual GPUs. 
 
-\subsection{Burn Time Selection}
-Forest researchers are interested in the carbon footprint caused by a forest fire. This environmental cost is just as important as the physical cost of loss of property and life that can be caused by a wildfire. 
-
 \subsection{Visualization}
 In order to better understand the impacts of forest fires in their environment, a visualization is needed. Visualizing the simulation is an important next step for future work of this project. It would allow an interactive environment in which the simulation could exist and be modified dynamically. 
+
+The fire library is built to be used as a tool to run calculations for any program which wished to utilize it. The library should allow for dynamic changes to the terrain values which could simulate real-world firefighting tools such as bulldozing tree lines, water and fire retardant drops, as well as tests to evaluate the effectiveness of fire containment methods by the forest service. 
