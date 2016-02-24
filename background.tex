@@ -91,7 +91,7 @@ CUDA is a parallel computing platform and computing model created by NVIDIA \cit
 \label{fig:cuda_arch}
 \end{figure}
 
-In order to test the work presented in this paper, the tests were run on a CUBIX box \cite{cubix}. The CUBIX box is designed to leverage multi-GPU and CPU programming. The box contains seven GPUs and four CPUs. 
+In order to test the work presented in this paper, the tests were run on a CUBIX box \cite{cubix}. The CUBIX box is designed to leverage multi-GPU and CPU programming. The box contains seven GPUs and four CPUs. This work only implements single-GPU simulations. The reason the CUBIX box was used was for the speed of determining results. It allows several simulations to be run and timed simultaneously, which meant the results could be gathered faster. 
 
 \section{Fuel Models}
 The data needed to process the fire simulation begins with the Fuel Models required by the simulator. Rothermel developed thirteen original fuel models, which are still used today \cite{1983roth}. Additional fuel models have been developed since that time, 42 of which are incorporated into this work. Additional fuel models, including those of what are called 'unburnable' in this work may be found in the work by Scott and Burgan \cite{fuelmodels}.  The fuel models contain data regarding surface-area-to-volume ratio by class and component, fuel model type, fuelbed depth, extinction moisture content, and fuel particle heat content. These data types are used to determine the behavior of the fire in a particular cell of the simulation. The details on the data available may be found in the documentation of the library. 
