@@ -100,7 +100,7 @@ An issue with this method arose from the static time step and needed to be addre
   \caption{The possible error for a fixed time-step propagation method. (a) shows the initial step with two lit cells a and b propagating to cells a' and b'. (b) shows a' propagating to a'' in the next time step. (c) is the situation where b'' would have propagated faster to the slot occupied in the previous step by a'', but because of the fixed time step, it would not propagate to an already lit cell.}
   \label{fig:accerr}
 % \end{figure}
-\end{figure*}eq:roth
+\end{figure*}
 
 A cell ignites when the distance from an ignited neighbor has been completely burned. Each cell stores the distance that has been consumed by the fire in each direction to its neighbors. The simulation checks a cell's neighbors for ignition, and then uses their properties to burn the amount of distance in that time step towards the current cell as seen in Figure \ref{fig:spreadTypes_2}. The cell ignites when one of its neighbors burns the distance completely. The cell then inherits the properties of the fire that propagated to it. The equation to determine how much distance is burned can be found in Equation \ref{eq:burn}. 
 
@@ -109,7 +109,7 @@ d = d - r \Delta t
 \label{eq:burn}
 \end{equation}
 
-Where $d$ is the distance that needs to be consumed. It is slowly decremented over time by the rate of spread ($r$) times the time step size ($\Delta$ $t$). In order to account for the fact that an 'overburn' could occur with fixed time steps. The exact time of arrival that is calculated is dependent on the exact time of arrival that the fire would have arrived at the cell. The equation used to find the exact time of arrival is found in Equation \ref{eq:overburn}. eq:roth
+Where $d$ is the distance that needs to be consumed. It is slowly decremented over time by the rate of spread ($r$) times the time step size ($\Delta$ $t$). In order to account for the fact that an 'overburn' could occur with fixed time steps. The exact time of arrival that is calculated is dependent on the exact time of arrival that the fire would have arrived at the cell. The equation used to find the exact time of arrival is found in Equation \ref{eq:overburn}. 
 
 \begin{equation}
 TOA = t_{now} + \frac{d_{over}}{r}
