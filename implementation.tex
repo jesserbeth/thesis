@@ -274,7 +274,23 @@ R_{actual} = R + CFB * (R_{max_{crown}} - R)
 
 The maximum between this new calculated value and the maximum spread rate for the base fire is the actual value that is passed back as the maximum spread rate of a fire cell containing an active crown fire. 
 
-
 \section{Spotting}
+Spotting is the phenomena that occurs when a fire brand is lofted into the air and blown ahead of the fire to potentially start a new fire ahead of the advancing fire wall (CITATION?). A fire brand is a burning piece of wood from the tree or debris found in the burning fire cell (CITATION?). The implementation found in this paper is based on what was developed in the FARSITE fire simulator \cite{FARSITE}. FARSITE uses Albini's model for spotting propagation to determine the location of the potential new fire. 
+
+**Here's where we talk about the actual models
+
+Spotting in this paper introduced new challenges to the development of the library. First, it required new data which was not available to the project. Second, the fire simulations, as seen in the previous sections, propagate the fire by testing to see if a cell has already reached the point of ignition. This point of ignition is determined by the value of the time of arrival for the cell being above zero (which represents the initial fire), and below the value which is set as infinity. In practice this value is the maximum value possibly held by a data type. The problem introduced by spotting is that the time of arrival that is calculated by the spotting kernel is a time of arrival that will occur in the future. As the simulation code was written for the previous sections, the fire would begin to propagate the exact next time tick. To fix this issue, a check is introduced to allow future times of arrival to be queued for the fire. This new functionality allows a user to set new fires in a simulation that may take place in the future. 
+
+A new map is passed to the kernels which contains a trigger value that allows a future ignition to be set. If the future ignition occurs after a cell has already been lit, then it is ignored. If the future ignition arrives at a time when a cell is not lit, it lights a fire in that cell, which propagates as a normal fire from that point would. 
 
 \section{Simulation Progression}
+The simulation has the ability to adapt to the needs of the user. Runtime analysis may be found in Chaper \ref{chapter:results}, which gives an illustration of the impact of adding more features to a simulation. The more features there are to calculate, the longer the runtime will be. However, it is up to the user of the library to decide what is appropriate for their application. The resolution of the fire and desired propagation features allow the user to use the library to create a simulation capable of a flow much like what is seen in Figure \ref{fig:simflow}.
+
+\begin{figure}%[!b]
+\centering
+%   \includegraphics[width=\textwidth,height=4.2cm]{burn_patterns}
+  \includegraphics[height=4.2cm]{figures/implementation/read-write-issue.png}
+  \caption{An example of simulation flow.}
+  \label{fig:simflow}
+\end{figure}
+
