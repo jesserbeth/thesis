@@ -275,22 +275,103 @@ R_{actual} = R + CFB * (R_{max_{crown}} - R)
 The maximum between this new calculated value and the maximum spread rate for the base fire is the actual value that is passed back as the maximum spread rate of a fire cell containing an active crown fire. 
 
 \section{Spotting}
-Spotting is the phenomena that occurs when a fire brand is lofted into the air and blown ahead of the fire to potentially start a new fire ahead of the advancing fire wall (CITATION?). A fire brand is a burning piece of wood from the tree or debris found in the burning fire cell (CITATION?). The implementation found in this paper is based on what was developed in the FARSITE fire simulator \cite{FARSITE}. FARSITE uses Albini's model for spotting propagation to determine the location of the potential new fire. 
+Spotting is the phenomena that occurs when a fire brand is lofted into the air and blown ahead of the fire to potentially start a new fire ahead of the advancing fire wall. A fire brand is a burning piece of wood from the tree or debris found in the burning fire cell \cite{firereview}. The implementation found in this paper is based on what was developed in the FARSITE fire simulator \cite{FARSITE}. FARSITE uses Albini's model for spotting propagation to determine the location of the potential new fire \cite{albini}. Figure \ref{fig:spot_diagram} shows the stages of spotting and will be referenced for the rest of this section as the implementation of spotting is described. 
 
-**Here's where we talk about the actual models
+\begin{figure}%[!b]
+\centering
+  \includegraphics[width=\textwidth]{figures/implementation/spotting_diagram.png}
+  \caption{A diagram to represent the phases of spotting, taken from \cite{firebehaveref}.}
+  \label{fig:spot_diagram}
+\end{figure}
+
+When torching occurs, the spotting calculation can begin. The first important component which needs to be computed is the time it takes for the particle to reach its maximum height $t_t$. $t_t$ is dependent on four time components given by: 
+
+\begin{equation}
+t_t = t_0 + t_1 + t_2 + t_3
+\end{equation}
+
+Where $t_0$ is the time of steady burning tree crowns. This is a data value that is dependent on the properties of the forest in the cell where spotting is occurring. This value was not available for this work, so a placeholder value was created for the time being and is a constant value for the simulations in the results section of this paper. 
+
+$t_1$ is the time it takes a particle to travel from its point of ignition to the flame tip. This paper makes the assumption that the fire brands originate from the top of the tree crown, but the actual value could be anywhere between the first branches on the tree capable of producing a brand to the tree crown. The equation used to calculate $t_1$ is as follows: 
+
+\begin{equation}
+t_1 = 1 - (\frac{z_o}{z_F})^{1/2} + \frac{v_o}{w_F}ln(\frac{1-\frac{v_o}{w_F}}{(\frac{z_o}{z_F})^{1/2} - \frac{v_o}{w_F}})
+\end{equation}
+
+Where $z_o$ is the particle height, again assumed to be the crown of the tree. $z_F$ is the flame height. The height of the flame is found as the vertical height from the ground to the tip of the flame \cite{firebehaveref}. $v_o$ is the terminal velocity of the particle and $w_F$ is the flame gas velocity. Again, the data for flame gas velocity was not available to the researchers at this time. A workaround to this problem may be achieved by calculating the ratio of $v_o / w_F$ as:  
+
+\begin{equation}
+v_o/w_F = B(D_p/z_F)^{1/2}
+\end{equation}
+
+Where $D_p$ is the particle diameter, and $B$ is a constant set to 40. 
+
+The second time section that needs to be calculated $t_2$ is the time it takes the particle to travel between the flame tip and the buoyant plume and is given by: 
+
+\begin{equation}
+t_2 = 0.2 + B(\frac{D_p}{z_F})^{1/2}(1 + B(\frac{D_p}{z_F})^{1/2}ln(1 + \frac{1}{1-(\frac{D_p}{z_F})^{1/2}}))
+\end{equation}
+
+and $t_3$ is defined as the time it takes the particle to complete its ascent through the buoyant plume. It is given by: 
+
+\begin{equation}
+t_3 = \frac{a_x}{0.8\frac{v_o}{w_F}}(ln(\frac{1 - 0.8 \frac{v_o}{w_F}}{1 - 0.8r \frac{v_o}{w_F}}) - 0.8\frac{v_o}{w_F}(r-1) - \frac{1}{2}(0.8\frac{v_o}{w_F})^2(r-1)^2)
+\end{equation}
+
+where: 
+
+\begin{equation}\
+r = (\frac{(b_x + \frac{z_o}{z_F})}{a_x})^{1/2}
+a_x = 5.963
+b_x = 4.563
+\end{equation}
+
+$a_x$ and $b_x$ are constants defined by Albini \cite{albini} and relate to the flame structure. Albini defines the height to which a fire brand will travel as the point in time where the buoyant flow structure of the tree $t_f$ equals $t_t$. The buoyant flow time is defined as: 
+
+\begin{equation}
+t_f = t_o + 1.2 + \frac{a_x}{3}((\frac{b_x + \frac{z_o}{z_F}}{a_x})^{3/2} - 1)
+\end{equation}
+
+A particle will be lofted into the air, and once it reaches its maximum height, the wind then carries it in a direction. If there is no wind in a simulation, the ember would simply fall back to the ground in the cell from which it was launched. Wind is modeled in this library as a 2D vector in each cell of the simulator. The vector contains a magnitude and direction of the wind. The wind vector only contains horizontal data. As in FARSITE's implementation, the fire brand's rate of descent decreases as it falls because as with a real brand, it loses density as it is in the air. Examples of fire brand sizes and their trajectories may be seen in Figure \ref{fig:spot_diagram}. The elevation at any time $t$ is given by: 
+
+\begin{equation}
+z(t) = z(0) - v_o(0)(\frac{t}{\tau} - \frac{1}{2}(\frac{t}{\tau})^2)
+\end{equation}
+
+Where: 
+
+
+\begin{flalign*}
+\tau &= \frac{4C_dv_o(0)}{K\pi g} \\
+K &= 0.0064\\
+g &= acceleration of gravity constant = 9.8 m s^{-2}\\
+v_o &= (\frac{\pi g \rho_s D_p}{2C_d\rho_a})^{1/2}\\
+\rho_s &= 0.3 g cm^{-3}\\
+\rho_a &= 1.2 x 10^{-3} g cm^{-3}\\
+C_D &= 1.2
+\end{flalign*}
+
+Where $g$ is the gravitational constant, $\rho_s$ is the density of charred wood cylinder, $\rho_a$ is the density of air, and $D_d$ is the drag coefficient of cylindrical particles. 
 
 Spotting in this paper introduced new challenges to the development of the library. First, it required new data which was not available to the project. Second, the fire simulations, as seen in the previous sections, propagate the fire by testing to see if a cell has already reached the point of ignition. This point of ignition is determined by the value of the time of arrival for the cell being above zero (which represents the initial fire), and below the value which is set as infinity. In practice this value is the maximum value possibly held by a data type. The problem introduced by spotting is that the time of arrival that is calculated by the spotting kernel is a time of arrival that will occur in the future. As the simulation code was written for the previous sections, the fire would begin to propagate the exact next time tick. To fix this issue, a check is introduced to allow future times of arrival to be queued for the fire. This new functionality allows a user to set new fires in a simulation that may take place in the future. 
 
 A new map is passed to the kernels which contains a trigger value that allows a future ignition to be set. If the future ignition occurs after a cell has already been lit, then it is ignored. If the future ignition arrives at a time when a cell is not lit, it lights a fire in that cell, which propagates as a normal fire from that point would. 
 
 \section{Simulation Progression}
-The simulation has the ability to adapt to the needs of the user. Runtime analysis may be found in Chaper \ref{chapter:results}, which gives an illustration of the impact of adding more features to a simulation. The more features there are to calculate, the longer the runtime will be. However, it is up to the user of the library to decide what is appropriate for their application. The resolution of the fire and desired propagation features allow the user to use the library to create a simulation capable of a flow much like what is seen in Figure \ref{fig:simflow}.
+The simulation has the ability to adapt to the needs of the user. Runtime analysis may be found in Chaper \ref{chapter:results}, which gives an illustration of the impact of adding more features to a simulation. The more features there are to calculate, the longer the runtime will be. However, it is up to the user of the library to decide what is appropriate for their application. The resolution of the fire and desired propagation features allow the user to use the library to create a simulation capable of a flow much like what is seen again in Algorithm \ref{alg:sim2}.
 
-\begin{figure}%[!b]
-\centering
-%   \includegraphics[width=\textwidth,height=4.2cm]{burn_patterns}
-  \includegraphics[height=4.2cm]{figures/implementation/read-write-issue.png}
-  \caption{An example of simulation flow.}
-  \label{fig:simflow}
-\end{figure}
+\begin{algorithm}
+  \caption{Simulation Progression}
+  \label{alg:sim2}
+%   \begin{algorithmic}[1] <- this will give you line numb
+  \begin{algorithmic}
+  \STATE InitializeTerrainData();
+  \STATE CalculateSpreadRates();
+  \WHILE{Simulation !Complete}
+  \STATE RunPropagationSimulation();
+  \ENDWHILE  
+  \STATE GenerateOutputFile();
+  \end{algorithmic}
+\end{algorithm}
 
+The specifics of the library's use are left up to the needs of the user. Results for simulation tests may be seen in Chapter \ref{chapter:results}. 
