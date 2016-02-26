@@ -96,6 +96,18 @@ On completion of the desired simulation, the data from the simulation must be co
 This functionality allows the user to write the computed output of their time of arrival map to a .csv output file. 
 
 \section{Architecture}
-This library is designed to act as a facilitation tool that will allow a user to program their own custom-defined simulations. The program aims to make visualization easily portable to users. In order to convey an understanding of the overall architecture of the library, a 
-** This is software architecture. Put class diagrams here. 
-\subsection{CUBIX}
+This library is designed to act as a facilitation tool that will allow a user to program their own custom-defined simulations. The program aims to make visualization easily portable to users. In order to convey an understanding of the overall architecture of the library, a class diagram is provided to describe the system in Figures \ref{fig:class_diagram} and \ref{fig:fire_sim_class_diagram}:
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth,keepaspectratio]{figures/design/class_diagram.png}
+    \caption{A class diagram for the Propagation classes in the simulation library.}
+    \label{fig:class_diagram}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[height=\textheight,keepaspectratio]{figures/design/fire_sim_diagram.png}
+    \caption{A class diagram for the Propagation classes in the simulation library.}
+    \label{fig:fire_sim_class_diagram}
+\end{figure}

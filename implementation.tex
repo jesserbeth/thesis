@@ -2,7 +2,6 @@
 \label{chapter:implementation}
 
 \section{Overview}
-
 Once the preprocessing is complete, one of three simulation methods was applied: Minimal Time, Iterative Minimal Time or Burn Distances. Since the goal of a forest fire simulator is to operate in real-time, it is unrealistic to expect to wait that long to receive the simulation data. After thirty minutes, the fire will have changed enough for the simulation's predictions to be irrelevant. The following algorithm outlines the simulation steps from start to finish:
 
 \begin{algorithm}
@@ -27,7 +26,7 @@ In order to address the runtime analysis needed for this paper, a sequential ver
 \section{Surface Fire}
 There are several potential approaches to calculating the propagation of the fire. This paper implemented three methods for iterating through a simulation to calculate the time of arrival map for a simple one-source forest fire under constant terrain and wind conditions. The first two spread methods (Minimal Time and Iterative Minimal Time) are based on stepping through time independent of specific fuel conditions and are based on the paper by Sousa, dos Reis, and Pereira \cite{gpufire}. The third spread method implemented in this paper (Burn Distances) was based on code and methods found in vFire \cite{vFire}. vFire implemented an accurate spread rate calculator based on Rothermel's fire spread equations and the fire spread and fuel model data to propagate based upon the physical burning of fuel.
 
-The model for propagation rate used in this paper was the same for all three spread methods. The model is based on Rothermel's fire spread equations, and is found in Equation \ref{eq:rate}. This equation was derived by the creators of vFire \cite{vFire}, and the data processing done in the preprocessing phase of this project was based on their work. The preprocessing step translates the equation from Rothermel's work seen in Equation \ref{eq:roth} to what is seen in the following Equation \ref{eq:rate}. The preprocessing data is out of the scope of this paper and is not covered in detail. 
+The model for propagation rate used in this paper was the same for all three spread methods. The model is based on Rothermel's fire spread equations, and is found increately Equation \ref{eq:rate}. This equation was derived by the creators of vFire \cite{vFire}, and the data processing done in the preprocessing phase of this project was based on their work. The preprocessing step translates the equation from Rothermel's work seen in Equation \ref{eq:roth} to what is seen in the following Equation \ref{eq:rate}. The preprocessing data is out of the scope of this paper and is not covered in detail. 
 
 \begin{equation}
 r(\Theta ) = R_{max}\frac{1.0 - \varepsilon }{1.0 - \varepsilon cos(\phi-\Theta )}
@@ -314,11 +313,11 @@ t_3 = \frac{a_x}{0.8\frac{v_o}{w_F}}(ln(\frac{1 - 0.8 \frac{v_o}{w_F}}{1 - 0.8r 
 \end{equation}
 
 Where: 
-\begin{equation}\
-r = (\frac{(b_x + \frac{z_o}{z_F})}{a_x})^{1/2}
-a_x = 5.963
-b_x = 4.563
-\end{equation}
+\begin{flalign*}
+r &= (\frac{(b_x + \frac{z_o}{z_F})}{a_x})^{1/2}\\
+a_x &= 5.963\\
+b_x &= 4.563
+\end{flalign*}
 
 $a_x$ and $b_x$ are constants defined by Albini \cite{albini} and relate to the flame structure. Albini defines the height to which a fire brand will travel as the point in time where the buoyant flow structure of the tree $t_f$ equals $t_t$. The buoyant flow time is defined as: 
 \begin{equation}
