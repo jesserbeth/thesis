@@ -2,18 +2,159 @@
 \label{chapter:results}
 
 \section{Overview}
-While this work only implements single-GPU simulations, a server with multiple GPU's called the CUBIX box was used to run the timing tests which are presented in this chapter \cite{cubix}. The reason the CUBIX box was used was for the speed of determining results. It allows several simulations to be run and timed simultaneously, which meant the results could be gathered faster. The GPU's used for the performance tests in this work were NVIDIA GTX 970s and the CPUs used was a Intel(R) Xeon(R) CPU @ 2.00GHz. 
+This chapter presents the results of the testing done on the three propagation methods, their timings, throughput and speedup against the sequential versions. The CPU used to test the implementation was an Intel(R) Core(TM) i7-3770K CPU @ 3.50GHz. The GPU used was a GTX-970 with 4GB of RAM and 1664 cuda cores. The sequential timings were accomplished without implementing any parallel component on the CPU. 
+
+In order to run a simulation using this library, three files are needed. A .dem file of the region of interest is needed to determine terrain, and all files are required to be in UTM format. The second file needed is a fuel model file for the default fuel models is needed, which provides the data needed for the third file. The third file needed is the fuel model file which corresponds fuel models to cells in the terrain file. In order to run crowning, three additional data files are needed: canopy height, crown base height, and crown bulk density. 
+
+\section{Spread Images}\label{spread_ims}
+This section shows the results of the base spread with acceleration integrated for all three methods. The spread patterns produce similar results, but slightly different patterns. The results of the three spread propagations for a flat plane with no wind influence can be seen in Figures \ref{fig:burn_dist} through \ref{fig:it_min_time}.
+\begin{figure}%[!b]
+\centering
+  \includegraphics[height=0.27\textheight]{figures/results/burn_dist.png}
+  \caption{The Burn Distances Kernel burn pattern at a grid size of 512x512.}
+  \label{fig:burn_dist}
+\end{figure}
+\begin{figure}%[!b]
+\centering
+  \includegraphics[height=0.27\textheight]{figures/results/min_time.png}
+  \caption{The Minimal Time Kernel burn pattern at a grid size of 512x512.}
+  \label{fig:min_time}
+\end{figure}
+\begin{figure}%[!b]
+\centering
+  \includegraphics[height=0.27\textheight]{figures/results/it_min_time.png}
+  \caption{The Iterative Minimal Time Kernel burn pattern at a grid size of 512x512.}
+  \label{fig:it_min_time}
+\end{figure}
 
 \section{Running Time Comparison}
 \subsection{Overview}
-\subsection{Granularity Comparison}
-\subsection{Block/Thread Comparison}
+This section compares the running times achieved by the different methods. It first compares the effect of adding the crowning behavior to the simulation and its impact on running time and then presents the runtime results of the experiments.
 
+\subsubsection{Crowning and Acceleration Time Differences}
+This section presents results on the running times for the crowning version of the implementation. The base spread method was compared against the crowning method, and the difference in timings was found to be on average less than 1\% of the difference between the running times. The only time it appeared to matter was in the sequential implementation. Figure \ref{fig:runtime_diff} shows the exact difference in runtimes as well as the values of those runtimes in seconds. 
+\begin{figure}%[!b]
+\centering
+  \includegraphics[width=\textwidth]{figures/results/runtime_diff.png}
+  \caption{The runtime difference between including the crowning computations or ignoring it. It is clear that the addition of the crowning module shows very little impact overall on the runtime, and the only cases where it impacts in a significant way are sequential runs.}
+  \label{fig:runtime_diff}
+\end{figure}
+ 
+Because the crowning timings did not impact the runtimes significantly, only the runtime results including crowning are included in this paper. The runtime graphs for the timings may be found in Figure \ref{fig:runtimes}. It is difficult to see the differences in the runtimes of each of the kernels on the linear graph, so a logarithm-scale graph is also included of the same results in Figure \ref{fig:runtimes_log}. Each simulation was run on flat ground with no wind factored into the simulation. The spread patterns produced are the same as those seen in Section \ref{spread_ims}. 
+\begin{figure}%[!b]
+\centering
+  \includegraphics[width=\textwidth]{figures/results/crowning_reg.png}
+  \caption{The runtimes to completion of simulation }
+  \label{fig:runtimes}
+\end{figure}  
+\begin{figure}%[!b]
+\centering
+  \includegraphics[width=\textwidth]{figures/results/crowning_log.png}
+  \caption{The log-scale version of the graph found in Figure \ref{fig:runtimes}.}
+  \label{fig:runtimes_log}
+\end{figure} 
 
-\section{Base Spread}
+Take note that the runtimes for both the sequential and parallel versions of the IMT kernel take less time to run. The kernel does not require the use of atomic functions, and therefore runs much faster than the other kernels. The large simulation sizes were not tested for sequential due to the extreme amount of time they would require to compute. The kernels outperform their partner in the sequential implementation at almost all sizes for every kernel type. Notice that the final 2048x2048 grid simulation for the Burn Distances and Minimal Time Kernels are similar in runtimes to the 512x512 runtimes of their sequential counterparts. 
 
-\section{Acceleration}
+\subsubsection{Throughput and Speedup}
+Throughput is defined as the amount of data processed per unit time \cite{cuda}. This paper presents the throughput results for this paper in GigaBytes/Second and is found by dividing the sequential running times by the parallel running times. These results are displayed in $log_2$ scale for ease of comparison in Figure \ref{fig:throughput}.
+\begin{figure}[!b]
+\centering
+  \includegraphics[width=\textwidth]{figures/results/throughput.png}
+  \caption{This graph presents the $log_2$ scale of the throughput results, which were calculated by dividing the GigaBytes processed / second.}
+  \label{fig:throughput}
+\end{figure} 
 
-\section{Crowning}
+The speedup is the amount that the parallel version is faster than the sequential version. This value is found by dividing the sequential running times by the parallel. These results can be seen in Figure \ref{fig:speedup}. 
+\begin{figure}[!b]
+\centering
+  \includegraphics[width=\textwidth]{figures/results/speedup.png}
+  \caption{This graph presents the speedup between the parallel and sequential implementations. The average speedup was around 20X faster for all the versions.}
+  \label{fig:speedup}
+\end{figure} 
 
-\section{Spotting}
+\subsubsection{Memory Transfer Impact}
+A major part of the time requirements for using CUDA is shipping the data from the host to the device \cite{cudabyexample}. In order to illustrate this time difference, the average running time with and without memory transfer was timed and may be seen in Figure \ref{fig:mem_comp}. Additionally, the average time it took to transfer memory per simulation size can be seen in Figure \ref{fig:mem_trans}. 
+\begin{figure}%[!b]
+\centering
+  \includegraphics[width=\textwidth]{figures/results/mem_compare.png}
+  \caption{This figure displays the runtimes found for a single iteration of the kernel call with and without memory transfer time.}
+  \label{fig:mem_comp}
+\end{figure} 
+\begin{figure}%[!b]
+\centering
+  \includegraphics[width=\textwidth]{figures/results/memory_transfer.png}
+  \caption{This figure displays the average time it took to transfer the memory for each size, for all methods. The transfer of memory is roughly the same for each kernel.}
+  \label{fig:mem_trans}
+\end{figure} 
+
+\subsubsection{Simulation vs. Real Time}
+This section presents the relationship between a real-world second and a simulation second. The library runs in faster-than-real-time, which means in a second of real-world time, the library can compute several seconds of simulation time data. The IMT kernel is fastest by far, which makes sense as it does not require any atomic functions to operate. 
+\begin{table}[]
+\centering
+\caption{A table containing the values for real-time versus simulation timesteps. Multiple simulation seconds are computed per real-world second.}
+\label{table:time_comp}
+\begin{tabular}{lllllll}
+                         & \multicolumn{3}{l}{Size: 512} & \multicolumn{3}{l}{Size: 1024} \\
+Kernel Used              & BD       & MT      & IMT      & BD      & MT       & IMT       \\
+Total Time Run (seconds) & 1        & 1       & 1        & 3       & 3        & 3         \\
+Total Iterations         & 240      & 240     & 220      & 180     & 200      & 180       \\
+Max Time in Sim          & 477      & 534     & 6804     & 347     & 483      & 7339      \\
+Time / Iterations        & 1.99     & 2.22    & 30.93    & 1.98    & 2.415    & 40.77     \\
+Real Time / Sim Time     & 477      & 534     & 6804     & 119     & 161      & 2446.33  
+\end{tabular}
+\end{table}
+
+\subsubsection{Wind}\label{sec:wind}
+A brief example of the influence of wind is presented in this section. The two examples are found as follows, and include a wind direction in the positive x direction in Figure \ref{fig:wind} and both in the positive x and y in Figure \ref{fig:wind_both}. 
+\begin{figure}%[!b]
+\centering
+  \includegraphics[height=.4\textheight]{figures/results/40_wind.png}
+  \caption{This figure displays the effect of the wind on a kernel when the wind is a value of 40 in the positive x direction.}
+  \label{fig:wind}
+\end{figure}  
+\begin{figure}%[!b]
+\centering
+  \includegraphics[height=.4\textheight]{figures/results/40_40_wind.png}
+  \caption{This figure displays the effect of the wind on a kernel when the wind is a value of 40 in the positive x and y direction.}
+  \label{fig:wind_both}
+\end{figure} 
+
+\subsubsection{Spotting}
+Unfortunately, the data necessary to run a full-scale spotting test was unavailable. The implementation was performed as though the data was available, however several approximations had to be made. Every ember was assumed to launch to the same height, and then the descent was calculated from that point. The model described in the Implementation chapter was implemented as far as it could go, but for some prototype results, the following figures are presented. Wind is a requirement for spotting to occur, or the ember would be launched and just land back in the already-burning cell. The wind in Figure \ref{fig:spot_40} is in the x-direction only, while the wind in Figure \ref{spot_40_20} is higher in the x, but has a value in the y direction as well. The windspeeds were chosen as to be comparable to those presented in Section \ref{sec:wind}.
+\begin{figure}%[!b]
+\centering
+  \includegraphics[height=.4\textheight]{figures/results/spot_40.png}
+  \caption{This figure displays the prototype results for the spotting module. The wind in this figure is gusting at a value of 40 in the x direction.}
+  \label{fig:spot_40}
+\end{figure}  
+\begin{figure}%[!b]
+\centering
+  \includegraphics[height=.4\textheight]{figures/results/spot_40_40.png}
+  \caption{This figure displays the prototype results for the spotting module. The wind in this figure is gusting at a value of 40 in the x direction and 20 in the y direction.}
+  \label{fig:spot_40_20}
+\end{figure} 
+
+\section{Kyle Canyon}
+For the final set of tests, the Burn Distances kernel was run on the data for Kyle Canyon in southern Nevada. Only the BD kernel is shown here because all the outputs are very similar. This is an example of a real-world application of the simulator working. Kyle canyon's  Three different points in the simulation are shown: one stopped after 5000 iterations (20.5 seconds to run), the second stopped after 7000 iterations (28.8 seconds), and the third stops after 10,000 iterations (41.1 seconds). The three images are to give a comparison of what the progression of fire looks like. 
+\begin{figure}%[!b]
+\centering
+  \includegraphics[height=.4\textheight]{figures/results/overlay_5.png}
+  \caption{This figure depicts the kyle canyon fire started at the entrance to the canyon after 5000 iterations in simulation.}
+  \label{fig:kyle_5000}
+\end{figure}  
+\begin{figure}%[!b]
+\centering
+  \includegraphics[height=.4\textheight]{figures/results/7000.png}
+  \caption{This figure depicts the kyle canyon fire started at the entrance to the canyon after 7000 iterations in simulation.}
+  \label{fig:kyle_7000}
+\end{figure} 
+\begin{figure}%[!b]
+\centering
+  \includegraphics[height=.4\textheight]{figures/results/overlay_7.png}
+  \caption{This figure depicts the kyle canyon fire started at the entrance to the canyon after 10,000 iterations in simulation.}
+  \label{fig:kyle_10000}
+\end{figure} 
+
+This thesis presented several avenues for results, including a base spread, running times, throughput comparisons, speedup comparisons, and real-world simulation data. The simulation runs in reasonable time on real-world data, and all three kernels achieved approximately 20X speedup. While the work accomplished in this paper is a good start, there are still areas where improvements and additions can be made. 
+
