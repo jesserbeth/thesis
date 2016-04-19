@@ -24,7 +24,7 @@ In order to address the runtime analysis needed for this paper, a sequential ver
 
 
 \section{Surface Fire}
-There are several potential approaches to calculating the propagation of the fire. This paper implemented three methods for iterating through a simulation to calculate the time of arrival map for a simple one-source forest fire under constant terrain and wind conditions. The first two spread methods (Minimal Time and Iterative Minimal Time) are based on stepping through time independent of specific fuel conditions and are based on the paper by Sousa, dos Reis, and Pereira \cite{gpufire}. The third spread method implemented in this paper (Burn Distances) was based on code and methods found in vFire \cite{vFire}. vFire implemented an accurate spread rate calculator based on Rothermel's fire spread equations and the fire spread and fuel model data to propagate based upon the physical burning of fuel.
+There are several potential approaches to calculating the propagation of a wildfire. This paper implemented three methods for iterating through a simulation to calculate the time of arrival map for a simple one-source forest fire under constant terrain and wind conditions. The first two spread methods (Minimal Time and Iterative Minimal Time) are based on stepping through time independent of specific fuel conditions and are based on the paper by Sousa, dos Reis, and Pereira \cite{gpufire}. The third spread method implemented in this paper (Burn Distances) was based on code and methods found in vFire \cite{vFire}. vFire implemented an accurate spread rate calculator based on Rothermel's fire spread equations and the fire spread and fuel model data to propagate based upon the physical burning of fuel.
 
 The model for propagation rate used in this paper was the same for all three spread methods. The model is based on Rothermel's fire spread equations, and is found increately Equation \ref{eq:rate}. This equation was derived by the creators of vFire \cite{vFire}, and the data processing done in the preprocessing phase of this project was based on their work. The preprocessing step translates the equation from Rothermel's work seen in Equation \ref{eq:roth} to what is seen in the following Equation \ref{eq:rate}. The preprocessing data is out of the scope of this paper and is not covered in detail. 
 
@@ -189,7 +189,7 @@ The parallel implementation of the IMT kernel is also very similar to the sequen
 \end{algorithm}
 
 \section{Fire Acceleration}
-A fire does not begin burning at its maximum rate of spread. Instead, it accelerates slowly towards its maximum rate over time as it burns. In this simulator library, fire acceleration is based on the work done by vFire \cite{vFire}. vFire in turn used the model presented by FARSITE \cite{FARSITE}. The formula is a simple logarithmic model that state the rate at some time is dependent on the time allowed for the fire to accelerate to its maximum rate depending on the current conditions of the cell in which it burns. This model was developed by the Canadian Forestry Fire Danger Group and Mcalpine and Wakimoto \cite{accel_canada}\cite{accel_mcalpine}. 
+A fire does not begin burning at its maximum rate of spread. Instead, it accelerates slowly towards its maximum rate over time as it burns. In this simulator library, fire acceleration is based on the work done by vFire \cite{vFire}. vFire in turn used the model presented by FARSITE \cite{FARSITE}. The formula is a simple logarithmic model that state the rate at some time is dependent on the time allowed for the fire to accelerate to its maximum rate depending on the current conditions of the cell in which it burns. This model was developed by the Canadian Forestry Fire Danger Group and Mcalpine and Wakimoto \cite{accel_canada,accel_mcalpine}. 
 
 Given the maximum spread rate $R_{max}$, the maximum spread rate at time $t$ is given by: 
 
@@ -219,7 +219,7 @@ dt = timeOfArrival(thisCell) - max(baseTime, timeOfArrival(ignitingCell))
 The time of arrival issue referred to by Figure \ref{fig:accerr} was a problem caused by acceleration in vFire. However, the time stepping methods in the MT and IMT methods do not have this issue as they have dynamic timestepping, and so they are not bound by the same limitations. The BD method's fix was addressed earlier in the chapter. 
 
 \section{Crown Fire}
-The occurance of crown fires is important for both the overall spread of the fire as well as the phenomena of spotting. Torching occurs when the crown fire spreads from the base of the trees to the top of the trees, and is the moment when the possibility of spotting occurs. The crown fire begins as passive and has the ability to move to an active state, which increases the maximum rate of spread by the fire. The implementation presented in this paper is again based on the implementation found in vFire \cite{vFire}. Their method was based entirely on FARSITE's implementation, which uses Van Wagner's methods found in \cite{wagner1977}\cite{wagner1993}. 
+The occurrence of crown fires is important for both the overall spread of the fire as well as the phenomena of spotting. Torching occurs when the crown fire spreads from the base of the trees to the top of the trees, and is the moment when the possibility of spotting occurs. The crown fire begins as passive and has the ability to move to an active state, which increases the maximum rate of spread by the fire. The implementation presented in this paper is again based on the implementation found in vFire \cite{vFire}. Their method was based entirely on FARSITE's implementation, which uses Van Wagner's methods found in \cite{wagner1977,wagner1993}. 
 
 In this implemenation, the maximum passive crown rate is given by: 
 
@@ -274,8 +274,7 @@ R_{actual} = R + CFB * (R_{max_{crown}} - R)
 The maximum between this new calculated value and the maximum spread rate for the base fire is the actual value that is passed back as the maximum spread rate of a fire cell containing an active crown fire. 
 
 \section{Spotting}
-Spotting is the phenomena that occurs when a fire brand is lofted into the air and blown ahead of the fire to potentially start a new fire ahead of the advancing fire wall. A fire brand is a burning piece of wood from the tree or debris found in the burning fire cell \cite{firereview}. The implementation found in this paper is based on what was developed in the FARSITE fire simulator \cite{FARSITE}. FARSITE uses Albini's model for spotting propagation to determine the location of the potential new fire \cite{albini}. In this implementation, the fire brands are assumed to be cylinders, which is an approximation to simplify the aerodynamics of the model. Figure \ref{fig:spot_diagram} shows the stages of spotting and will be referenced for the rest of this section as the implementation of spotting is described. 
-
+Spotting is the phenomena that occurs when a fire brand is lofted into the air and blown ahead of the fire to potentially start a new fire ahead of the advancing fire wall. A fire brand is a burning piece of wood from a tree or debris found in the burning fire cell \cite{firereview}. The implementation found in this paper is based on what was developed in the FARSITE fire simulator \cite{FARSITE}. FARSITE uses Albini's 1979 model for spotting propagation to determine the location of the potential new fire \cite{albini}. In this implementation, the fire brands are assumed to be cylinders, which is an approximation to simplify the aerodynamics of the model. Figure \ref{fig:spot_diagram} shows the stages of spotting and will be referenced for the rest of this section as the implementation of spotting is described. 
 \begin{figure}%[!b]
 \centering
   \includegraphics[width=\textwidth]{figures/implementation/spotting_diagram.png}
@@ -295,7 +294,7 @@ $t_1$ is the time it takes a particle to travel from its point of ignition to th
 t_1 = 1 - (\frac{z_o}{z_F})^{1/2} + \frac{v_o}{w_F}ln(\frac{1-\frac{v_o}{w_F}}{(\frac{z_o}{z_F})^{1/2} - \frac{v_o}{w_F}})
 \end{equation}
 
-Where $z_o$ is the particle height, again assumed to be the crown owf the tree. $z_F$ is the flame height. The height of the flame is found as the vertical height from the ground to the tip of the flame \cite{firebehaveref}. $v_o$ is the terminal velocity of the particle and $w_F$ is the flame gas velocity. Again, the data for flame gas velocity was not available to the researchers at this time. A workaround to this problem may be achieved by calculating the ratio of $v_o / w_F$ as:  
+Where $z_o$ is the particle height, again assumed to be the crown of the tree. $z_F$ is the flame height. The height of the flame is found as the vertical height from the ground to the tip of the flame \cite{firebehaveref}. $v_o$ is the terminal velocity of the particle and $w_F$ is the flame gas velocity. Again, the data for flame gas velocity was not available to the researchers at this time. A workaround to this problem may be achieved by calculating the ratio of $v_o / w_F$ as:  
 \begin{equation}
 v_o/w_F = B(D_p/z_F)^{1/2}
 \end{equation}
@@ -306,7 +305,7 @@ The second time section that needs to be calculated $t_2$ is the time it takes t
 \begin{equation}
 t_2 = 0.2 + B(\frac{D_p}{z_F})^{1/2}(1 + B(\frac{D_p}{z_F})^{1/2}ln(1 + \frac{1}{1-(\frac{D_p}{z_F})^{1/2}}))
 \end{equation}
-w
+
 and $t_3$ is defined as the time it takes the particle to complete its ascent through the buoyant plume. It is given by: 
 \begin{equation}
 t_3 = \frac{a_x}{0.8\frac{v_o}{w_F}}(ln(\frac{1 - 0.8 \frac{v_o}{w_F}}{1 - 0.8r \frac{v_o}{w_F}}) - 0.8\frac{v_o}{w_F}(r-1) - \frac{1}{2}(0.8\frac{v_o}{w_F})^2(r-1)^2)
@@ -323,6 +322,7 @@ $a_x$ and $b_x$ are constants defined by Albini \cite{albini} and relate to the 
 \begin{equation}
 t_f = t_o + 1.2 + \frac{a_x}{3}((\frac{b_x + \frac{z_o}{z_F}}{a_x})^{3/2} - 1)
 \end{equation}
+In this implementation, these values had to be approximated in several ways because not all of the necessary data was available. The maximum height was assumed to be constant, and while the equations are implemented and ready for the correct data, it is not yet available. 
 
 A particle will be lofted into the air, and once it reaches its maximum height, the wind then carries it in a direction. If there is no wind in a simulation, the ember would simply fall back to the ground in the cell from which it was launched. Wind is modeled in this library as a 2D vector in each cell of the simulator. The vector contains a magnitude and direction of the wind. The wind vector only contains horizontal data. As in FARSITE's implementation, the fire brand's rate of descent decreases as it falls because as with a real brand, it loses density as it is in the air. Examples of fire brand sizes and their trajectories may be seen in Figure \ref{fig:spot_diagram}. The elevation at any time $t$ is given by: 
 \begin{equation}
@@ -352,11 +352,11 @@ Where $z$ is the current height of the particle, $H$ is the current height of th
 U_H = \frac{U_{20+H}}{ln(\frac{20+1.18H}{0.43H})}
 \end{equation}
 
-In this paper, the method for ignition is modeled by a simple probability which is input by the user. However, there are more complex methods for modeling the ignition of a firebrand which impacts the forest floor. Factors such as forest floor fuel type, forest canopy filtering, surface moisture content, and the temperature of the fuel \cite{bradshaw1984}\cite{blackmarr1972}\cite{bunting1974}. These factors are not examined and are left to future work. Once a fire ignites, it is treated the same as any other ignition source. 
+In this paper, the method for ignition is modeled by a simple probability which is input by the user. However, there are more complex methods for modeling the ignition of a firebrand which impacts the forest floor. Factors such as forest floor fuel type, forest canopy filtering, surface moisture content, and the temperature of the fuel \cite{bradshaw1984,blackmarr1972,bunting1974}. These factors are not examined and are left to future work. Once a fire ignites, it is treated the same as any other ignition source. 
 
-Spotting in this paper introduced new challenges to the development of the library. First, it required new data which was not available to the project. Second, the fire simulations, as seen in the previous sections, propagate the fire by testing to see if a cell has already reached the point of ignition. This point of ignition is determined by the value of the time of arrival for the cell being above zero (which represents the initial fire), and below the value which is set as infinity. In practice this value is the maximum value possibly held by a data type. The problem introduced by spotting is that the time of arrival that is calculated by the spotting kernel is a time of arrival that will occur in the future. As the simulation code was written for the previous sections, the fire would begin to propagate the exact next time tick. To fix this issue, a check is introduced to allow future times of arrival to be queued for the fire. This new functionality allows a user to set new fires in a simulation that may take place in the future. 
+In this paper, spotting introduced new challenges to the development of the library. First, it required new data which was not available to the project. Second, the fire simulations, as seen in the previous sections, propagate the fire by testing to see if a cell has already reached the point of ignition. This point of ignition is determined by the value of the time of arrival for the cell being above zero (which represents the initial fire), and below the value which is set as infinity. In practice this value is the maximum value possibly held by a data type. The problem introduced by spotting is that the time of arrival that is calculated by the spotting kernel is a time of arrival that will occur in the future. As the simulation code was written for the previous sections, the fire would begin to propagate the exact next time tick. To fix this issue, the descent of the falling particle is computed at each time tick with the rest of the simulations and stored in a list of falling embers. The list is updated when one burns out or lands to ignite a new fire, or a new ember needs to be added to the list.  
 
-A new map is passed to the kernels which contains a trigger value that allows a future ignition to be set. If the future ignition occurs after a cell has already been lit, then it is ignored. If the future ignition arrives at a time when a cell is not lit, it lights a fire in that cell, which propagates as a normal fire from that point would. 
+If the spotting brand's ignition occurs after a cell has already been lit, then it is ignored. If the brand arrives at a time when a cell is not lit, it lights a fire in that cell, which propagates as a normal fire from that point would. 
 
 \section{Simulation Progression}
 The simulation has the ability to adapt to the needs of the user. Runtime analysis may be found in Chaper \ref{chapter:results}, which gives an illustration of the impact of adding more features to a simulation. The more features there are to calculate, the longer the runtime will be. However, it is up to the user of the library to decide what is appropriate for their application. The resolution of the fire and desired propagation features allow the user to use the library to create a simulation capable of a flow much like what is seen again in Algorithm \ref{alg:sim2}.
