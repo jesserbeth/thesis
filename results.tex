@@ -32,16 +32,16 @@ This section shows the results of the base spread with acceleration integrated f
 This section compares the running times achieved by the different methods. It first compares the effect of adding the crowning behavior to the simulation and its impact on running time and then presents the runtime results of the experiments.
 
 \subsubsection{Crowning and Acceleration Time Differences}
-This section presents results on the running times for the crowning version of the implementation. The base spread method was compared against the crowning method, and the difference in timings was found to be on average less than 1\% of the difference between the running times. The only time it appeared to matter was in the sequential implementation. Figure \ref{fig:runtime_diff} shows the exact difference in runtimes as well as the values of those runtimes in seconds. 
+This section presents results on the running times for the crowning version of the implementation. The base spread method was compared against the crowning method, and the difference in timings was found to be on average less than 1\% of the difference between the running times. The only time it appeared to matter was in the sequential implementation. Because the difference between the two runtimes is negligable, no chart is provided to illustrate the differences. 
  
 Because the crowning timings did not impact the runtimes significantly, only the runtime results including crowning are included in this paper. The runtime graphs for the timings may be found in Figure \ref{fig:runtimes}. It is difficult to see the differences in the runtimes of each of the kernels on the linear graph, so a logarithm-scale graph is also included of the same results in Figure \ref{fig:runtimes_log}. Each simulation was run on flat ground with no wind factored into the simulation. The spread patterns produced are the same as those seen in Section \ref{spread_ims}. 
-\begin{figure}[H]
-\centering
+%\begin{figure}[H]
+%\centering
   %\includegraphics[height=.4\textheight
-  \includegraphics[width=\textwidth]{figures/results/runtime_diff.png}
-  \caption{The runtime difference between including the crowning computations or ignoring it. It is clear that the addition of the crowning module shows very little impact overall on the runtime, and the only cases where it impacts in a significant way are sequential runs.}
-  \label{fig:runtime_diff}
-\end{figure}
+%  \includegraphics[width=\textwidth]{figures/results/runtime_diff.png}
+%  \caption{The runtime difference between including the crowning computations or ignoring it. It is clear that the addition of the crowning module shows very little impact overall on the runtime, and the only cases where it impacts in a significant way are sequential runs.}
+%  \label{fig:runtime_diff}
+%\end{figure}
 \begin{figure}%[!b]
 \centering
   \includegraphics[width=\textwidth]{figures/results/crowning_reg.png}
@@ -62,7 +62,7 @@ Throughput is defined as the amount of data processed per unit time \cite{cuda}.
 \begin{figure}[H]
 \centering
   \includegraphics[width=\textwidth]{figures/results/throughput.png}
-  \caption{This graph presents the $log_2$ scale of the throughput results, which were calculated by dividing the GigaBytes processed / second.}
+  \caption{The $log_2$ scale of the throughput results.}
   \label{fig:throughput}
 \end{figure} 
 
@@ -70,7 +70,7 @@ The speedup is the amount that the parallel version is faster than the sequentia
 \begin{figure}[H]
 \centering
   \includegraphics[width=\textwidth]{figures/results/speedup.png}
-  \caption{This graph presents the speedup between the parallel and sequential implementations. The average speedup was around 20X faster for all the versions.}
+  \caption{The speedup between the parallel and sequential implementations. The average speedup was around 20X faster for all the versions.}
   \label{fig:speedup}
 \end{figure} 
 
@@ -78,7 +78,7 @@ The speedup is the amount that the parallel version is faster than the sequentia
 A major part of the time requirements for using CUDA is shipping the data from the host to the device \cite{cudabyexample}. In order to illustrate this time difference, the average running time with and without memory transfer was timed and may be seen in Figure \ref{fig:mem_comp}. Additionally, the average time it took to transfer memory per simulation size can be seen in Table \ref{table:mem_time}.
 \begin{table}[H]
 \centering
-\caption{The average time it took to transfer memory from the CPU host to the GPU device in the three largest simulation sizes.}
+\caption{The average time to transfer memory from the CPU host to the GPU device in the three largest simulation sizes.}
 \label{table:mem_time}
 \begin{tabular}{l|c|}
 \cline{2-2}
@@ -91,7 +91,7 @@ A major part of the time requirements for using CUDA is shipping the data from t
 \begin{figure}[H]
 \centering
   \includegraphics[height=.4\textheight]{figures/results/mem_compare.png}
-  \caption{This figure displays the runtimes found for a single iteration of the kernel call with and without memory transfer time.}
+  \caption{The runtimes found for a single iteration of the kernel call with and without memory transfer time.}
   \label{fig:mem_comp}
 \end{figure} 
 %\begin{figure}%[!b]
@@ -126,13 +126,13 @@ A brief example of the influence of wind is presented in this section. The two e
 \begin{figure}[H]
 \centering
   \includegraphics[height=.4\textheight]{figures/results/40_wind.png}
-  \caption{This figure displays the effect of the wind on a kernel when the wind is a value of 40 in the positive x direction.}
+  \caption{Effect of the wind on a kernel when the wind is a value of 40 in the positive x direction.}
   \label{fig:wind}
 \end{figure}  
 \begin{figure}[H]
 \centering
   \includegraphics[height=.4\textheight]{figures/results/40_40_wind.png}
-  \caption{This figure displays the effect of the wind on a kernel when the wind is a value of 40 in the positive x and y direction.}
+  \caption{Effect of the wind on a kernel when the wind is a value of 40 in the positive x and y direction.}
   \label{fig:wind_both}
 \end{figure} 
 
@@ -141,34 +141,34 @@ Unfortunately, the data necessary to run a full-scale spotting test was unavaila
 \begin{figure}%[!b]
 \centering
   \includegraphics[height=.38\textheight]{figures/results/spot_40.png}
-  \caption{This figure displays the prototype results for the spotting module. The wind in this figure is gusting at a value of 40 in the x direction.}
+  \caption{The prototype results for the spotting module. The wind in this figure is gusting at a value of 40 in the x direction.}
   \label{fig:spot_40}
 \end{figure}  
 \begin{figure}%[!b]
 \centering
   \includegraphics[height=.38\textheight]{figures/results/spot_40_40.png}
-  \caption{This figure displays the prototype results for the spotting module. The wind in this figure is gusting at a value of 40 in the x direction and 20 in the y direction.}
+  \caption{The prototype results for the spotting module. The wind in this figure is gusting at a value of 40 in the x direction and 20 in the y direction.}
   \label{fig:spot_40_20}
 \end{figure} 
 
 \section{Kyle Canyon}
-For the final set of tests, the Burn Distances kernel was run on the data for Kyle Canyon in southern Nevada. Only the BD kernel is shown here because all the outputs are very similar. This is an example of a real-world application of the simulator working. Kyle canyon's  Three different points in the simulation are shown: one stopped after 5000 iterations (20.5 seconds to run), the second stopped after 7000 iterations (28.8 seconds), and the third stops after 10,000 iterations (41.1 seconds). The three images are to give a comparison of what the progression of fire looks like. 
+For the final set of tests, the Burn Distances kernel was run on the data for Kyle Canyon in southern Nevada. Only the BD kernel is shown here because all the outputs are very similar. This is an example of a real-world application of the simulator working. Kyle canyon's  Three different points in the simulation are shown: one stopped after 5000 iterations (20.5 seconds to run), the second stopped after 7000 iterations (28.8 seconds), and the third stops after 10,000 iterations (41.1 seconds). The scale at which the simulation was run meant each time step was equivalent to 100 seconds, as was found in vFire \cite{vFire}. The end time of the simulation was approximately 2.1 days after the beginning of the simulation. The three images are to give a comparison of what the progression of fire looks like. 
 \begin{figure}%[!b]
 \centering
   \includegraphics[height=.4\textheight]{figures/results/overlay_5.png}
-  \caption{This figure depicts the kyle canyon fire started at the entrance to the canyon after 5000 iterations in simulation.}
+  \caption{The Kyle Canyon fire started at the entrance to the canyon after 5000 iterations in simulation.}
   \label{fig:kyle_5000}
 \end{figure}  
 \begin{figure}%[!b]
 \centering
   \includegraphics[height=.4\textheight]{figures/results/7000.png}
-  \caption{This figure depicts the kyle canyon fire started at the entrance to the canyon after 7000 iterations in simulation.}
+  \caption{The Kyle Canyon fire started at the entrance to the canyon after 7000 iterations in simulation.}
   \label{fig:kyle_7000}
 \end{figure} 
 \begin{figure}%[!b]
 \centering
   \includegraphics[height=.4\textheight]{figures/results/overlay_7.png}
-  \caption{This figure depicts the kyle canyon fire started at the entrance to the canyon after 10,000 iterations in simulation.}
+  \caption{The Kyle Canyon fire started at the entrance to the canyon after 10,000 iterations in simulation. This simulation ended approximately 2.1 days after the start of the fire.}
   \label{fig:kyle_10000}
 \end{figure} 
 
